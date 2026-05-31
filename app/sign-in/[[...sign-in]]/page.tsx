@@ -47,7 +47,7 @@ export default function SignInPage() {
                 </span>
                 <div>
                   <p className="text-md font-medium text-copy-primary">{title}</p>
-                  <p className="mt-0.5 text-md text-copy-muted">{description}</p>
+                  <p className="mt-0.5 text-sm text-copy-muted">{description}</p>
                 </div>
               </li>
             ))}
