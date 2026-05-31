@@ -4,7 +4,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 02: Editor Chrome — Complete
+- Feature 03: Auth — Complete
 
 ## Current Goal
 
@@ -14,10 +14,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 - 01-design-system: shadcn/ui installed and configured (Radix + Nova preset, Tailwind v4), components Button/Card/Dialog/Input/Tabs/TextArea/ScrollArea added, lucide-react installed, libs/utils.ts created with cn() helper, dark theme active via .dark class on <html>.
 - 02-editor: EditorNavbar (fixed h-12, sidebar toggle with PanelLeftOpen/PanelLeftClose, dark bg, subtle border-b) and ProjectSidebar (fixed floating overlay, slides in from left via translateX transition, Tabs with My Projects/Shared empty states, New Project button) created. Dialog pattern already ready via existing dialog.tsx (Title, Description, Footer actions, uses color tokens).
+- 03-auth: ClerkProvider wraps root layout with dark theme + CSS variable overrides; proxy.ts at root with clerkMiddleware protecting all routes except /sign-in and /sign-up; sign-in/sign-up pages with two-panel desktop layout (left: logo + tagline + feature list, right: Clerk form) and form-only on mobile; app/page.tsx redirects authenticated → /editor, unauthenticated → /sign-in; UserButton added to EditorNavbar right section; app/editor/page.tsx created.
 
 ## In Progress
 
-- None yet.
+- None.
 
 ## Next Up
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
+import { UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -27,7 +28,9 @@ export function EditorNavbar({ isOpen, onToggle, className }: EditorNavbarProps)
 
       <div className="flex-1" />
 
-      <div className="flex items-center px-2" />
+      <div className="flex items-center px-3">
+        <UserButton />
+      </div>
     </header>
   )
 }
