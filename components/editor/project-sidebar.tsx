@@ -135,7 +135,7 @@ function ProjectItem({
     <li className="group flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-muted/50">
       <span className="flex-1 truncate text-sm text-foreground">{project.name}</span>
       {showActions && (
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
           <Button
             variant="ghost"
             size="icon-xs"

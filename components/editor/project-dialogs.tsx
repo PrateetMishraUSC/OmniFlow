@@ -103,7 +103,7 @@ function CreateProjectDialog({
         </div>
 
         <DialogFooter showCloseButton>
-          <Button disabled={!nameInput.trim() || loading}>
+          <Button disabled={!nameInput.trim() || loading} onClick={onClose}>
             Create Project
           </Button>
         </DialogFooter>
