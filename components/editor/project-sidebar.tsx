@@ -1,58 +1,160 @@
 "use client"
 
-import { X, Plus } from "lucide-react"
+import { Pencil, Trash2, X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import { mockProjects, type Project } from "@/lib/mock-projects"
 
 interface ProjectSidebarProps {
   isOpen: boolean
   onClose: () => void
+  onOpenCreate: () => void
+  onRename: (project: Project) => void
+  onDelete: (project: Project) => void
   className?: string
 }
 
-export function ProjectSidebar({ isOpen, onClose, className }: ProjectSidebarProps) {
+export function ProjectSidebar({
+  isOpen,
+  onClose,
+  onOpenCreate,
+  onRename,
+  onDelete,
+  className,
+}: ProjectSidebarProps) {
+  const ownedProjects = mockProjects.filter((p) => p.owned)
+  const sharedProjects = mockProjects.filter((p) => !p.owned)
+
   return (
-    <aside
-      id="editor-project-sidebar"
-      aria-hidden={!isOpen}
-      inert={!isOpen}
-      className={cn(
-        "fixed top-12 left-0 bottom-0 z-30 w-72",
-        "flex flex-col bg-card border-r border-border",
-        "transition-transform duration-200 ease-in-out",
-        isOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none",
-        className
+    <>
+      {/* Mobile backdrop scrim */}
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className={cn(
+          "fixed inset-0 z-20 bg-black/50 transition-opacity duration-200 sm:hidden",
+          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+      />
+
+      <aside
+        id="editor-project-sidebar"
+        aria-hidden={!isOpen}
+        inert={!isOpen}
+        className={cn(
+          "fixed top-12 left-0 bottom-0 z-30 w-72",
+          "flex flex-col bg-card border-r border-border",
+          "transition-transform duration-200 ease-in-out",
+          isOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none",
+          className
+        )}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <span className="text-sm font-medium text-foreground">Project</span>
+          <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close sidebar">
+            <X />
+          </Button>
+        </div>
+
+        <Tabs defaultValue="my-projects" className="flex-1 flex flex-col min-h-0 px-3 pt-3">
+          <TabsList className="w-full">
+            <TabsTrigger value="my-projects" className="flex-1">My Projects</TabsTrigger>
+            <TabsTrigger value="shared" className="flex-1">Shared</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="my-projects" className="flex-1 min-h-0">
+            {ownedProjects.length === 0 ? (
+              <div className="flex flex-1 items-center justify-center h-full">
+                <span className="text-sm text-muted-foreground">No projects yet</span>
+              </div>
+            ) : (
+              <ScrollArea className="h-full">
+                <ul className="py-1">
+                  {ownedProjects.map((project) => (
+                    <ProjectItem
+                      key={project.id}
+                      project={project}
+                      onRename={onRename}
+                      onDelete={onDelete}
+                      showActions
+                    />
+                  ))}
+                </ul>
+              </ScrollArea>
+            )}
+          </TabsContent>
+
+          <TabsContent value="shared" className="flex-1 min-h-0">
+            {sharedProjects.length === 0 ? (
+              <div className="flex flex-1 items-center justify-center h-full">
+                <span className="text-sm text-muted-foreground">Nothing shared yet</span>
+              </div>
+            ) : (
+              <ScrollArea className="h-full">
+                <ul className="py-1">
+                  {sharedProjects.map((project) => (
+                    <ProjectItem
+                      key={project.id}
+                      project={project}
+                      onRename={onRename}
+                      onDelete={onDelete}
+                      showActions={false}
+                    />
+                  ))}
+                </ul>
+              </ScrollArea>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        <div className="p-3 border-t border-border">
+          <Button className="w-full gap-2" variant="outline" onClick={onOpenCreate}>
+            <Plus />
+            New Project
+          </Button>
+        </div>
+      </aside>
+    </>
+  )
+}
+
+function ProjectItem({
+  project,
+  onRename,
+  onDelete,
+  showActions,
+}: {
+  project: Project
+  onRename: (project: Project) => void
+  onDelete: (project: Project) => void
+  showActions: boolean
+}) {
+  return (
+    <li className="group flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-muted/50">
+      <span className="flex-1 truncate text-sm text-foreground">{project.name}</span>
+      {showActions && (
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`Rename ${project.name}`}
+            onClick={() => onRename(project)}
+          >
+            <Pencil />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`Delete ${project.name}`}
+            onClick={() => onDelete(project)}
+            className="text-destructive hover:text-destructive"
+          >
+            <Trash2 />
+          </Button>
+        </div>
       )}
-    >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <span className="text-sm font-medium text-foreground">Project</span>
-        <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close sidebar">
-          <X />
-        </Button>
-      </div>
-
-      <Tabs defaultValue="my-projects" className="flex-1 flex flex-col min-h-0 px-3 pt-3">
-        <TabsList className="w-full">
-          <TabsTrigger value="my-projects" className="flex-1">My Projects</TabsTrigger>
-          <TabsTrigger value="shared" className="flex-1">Shared</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="my-projects" className="flex-1 flex items-center justify-center">
-          <span className="text-sm text-muted-foreground">No projects yet</span>
-        </TabsContent>
-
-        <TabsContent value="shared" className="flex-1 flex items-center justify-center">
-          <span className="text-sm text-muted-foreground">Nothing shared yet</span>
-        </TabsContent>
-      </Tabs>
-
-      <div className="p-3 border-t border-border">
-        <Button className="w-full gap-2" variant="outline">
-          <Plus />
-          New Project
-        </Button>
-      </div>
-    </aside>
+    </li>
   )
 }
