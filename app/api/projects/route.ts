@@ -21,9 +21,15 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
-  const name: string = body?.name?.trim() || "Untitled Project";
-  const id: string | undefined = body?.id?.trim() || undefined;
+  const body: Record<string, unknown> = await request.json().catch(() => ({}));
+  const name =
+    typeof body.name === "string" && body.name.trim().length > 0
+      ? body.name.trim()
+      : "Untitled Project";
+  const id =
+    typeof body.id === "string" && body.id.trim().length > 0
+      ? body.id.trim()
+      : undefined;
 
   const project = await prisma.project.create({
     data: { ...(id ? { id } : {}), ownerId: userId, name },
