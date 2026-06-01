@@ -4,7 +4,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 05: Prisma — Complete
+- Feature 07: Wire Editor — Complete
 
 ## Current Goal
 
@@ -17,6 +17,8 @@ Update this file whenever the current phase, active feature, or implementation s
 - 03-auth: ClerkProvider wraps root layout with dark theme + CSS variable overrides; proxy.ts at root with clerkMiddleware protecting all routes except /sign-in and /sign-up; sign-in/sign-up pages with two-panel desktop layout (left: logo + tagline + feature list, right: Clerk form) and form-only on mobile; app/page.tsx redirects authenticated → /editor, unauthenticated → /sign-in; UserButton added to EditorNavbar right section; app/editor/page.tsx created.
 - 04-project-dialogs: Editor home screen (heading + description + New Project button) in app/editor/page.tsx; useProjectDialogs hook (dialog/form/loading state, slug derivation) in hooks/use-project-dialogs.ts; Create/Rename/Delete dialogs in components/editor/project-dialogs.tsx; ProjectSidebar updated with project list from mock data, Rename/Delete actions on owned projects (hidden on shared), mobile backdrop scrim; mock projects in lib/mock-projects.ts.
 - 05-prisma: Project and ProjectCollaborator models in prisma/models/project.prisma (status enum DRAFT/ARCHIVED, cascade delete, unique/index constraints); lib/prisma.ts cached singleton branching on prisma+postgres:// (Accelerate) vs direct @prisma/adapter-pg; migration applied (20260601082723_init_project_models); client generated to app/generated/prisma/. Workaround: zeptomatch CJS shim patched into @prisma/dev for Node 20 compatibility; prisma.config.ts updated to load .env.local.
+- 06-project-apis: REST endpoints in app/api/projects/route.ts (GET list, POST create) and app/api/projects/[projectId]/route.ts (PATCH rename, DELETE delete); Clerk userId used as ownerId; 401 for unauthenticated, 403 for non-owner mutations; default name "Untitled Project". next.config.ts updated with serverExternalPackages for Prisma Accelerate optional deps; lib/prisma.ts uses eval('require') to prevent Turbopack from statically resolving uninstalled Accelerate packages.
+- 07-wire-editor: app/editor/page.tsx converted to async server component using getProjectsForUser() (lib/projects.ts) to fetch owned and shared projects server-side; useProjectDialogs replaced by useProjectActions hook (hooks/use-project-actions.ts) with create (slug+6-char suffix roomId, POST, navigate), rename (PATCH, refresh), and delete (DELETE, redirect if active workspace else refresh) mutations; components/editor/editor-client.tsx client wrapper holds sidebar/dialog state; ProjectSidebar updated to accept ownedProjects/sharedProjects props; ProjectDialogs wired to onCreate/onRename/onDelete handlers with loading states; POST /api/projects accepts optional custom id for roomId alignment.
 
 ## In Progress
 

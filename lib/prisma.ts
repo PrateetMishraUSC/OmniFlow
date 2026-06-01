@@ -5,12 +5,17 @@ import { Pool } from "pg";
 const createClient = () => {
   const url = process.env.DATABASE_URL ?? "";
 
+  if (!url) {
+    throw new Error("DATABASE_URL is required to initialize Prisma");
+  }
+
   if (url.startsWith("prisma+postgres://")) {
-    // Accelerate path — @prisma/extension-accelerate must be installed at runtime
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { withAccelerate } = require("@prisma/extension-accelerate");
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { PrismaPostgres } = require("@prisma/adapter-prisma-postgres");
+    // Accelerate path — packages are optional and resolved at runtime only.
+    // eval('require') prevents Turbopack from statically tracing these imports.
+    // eslint-disable-next-line no-eval
+    const runtimeRequire = eval("require");
+    const { withAccelerate } = runtimeRequire("@prisma/extension-accelerate");
+    const { PrismaPostgres } = runtimeRequire("@prisma/adapter-prisma-postgres");
     const adapter = new PrismaPostgres({ url });
     return new PrismaClient({ adapter }).$extends(withAccelerate());
   }

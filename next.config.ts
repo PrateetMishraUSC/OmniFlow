@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: [
+    "@prisma/extension-accelerate",
+    "@prisma/adapter-prisma-postgres",
+  ],
 };
 
 export default nextConfig;

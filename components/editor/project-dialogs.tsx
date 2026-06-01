@@ -8,31 +8,35 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { type ProjectDialogsState } from "@/hooks/use-project-dialogs"
+import type { DialogType, ProjectRef } from "@/hooks/use-project-actions"
 
-type Props = Pick<
-  ProjectDialogsState,
-  | "dialog"
-  | "activeProject"
-  | "nameInput"
-  | "setNameInput"
-  | "slug"
-  | "loading"
-  | "close"
->
+interface Props {
+  dialog: DialogType
+  activeProject: ProjectRef | null
+  nameInput: string
+  setNameInput: (v: string) => void
+  slugPreview: string
+  loading: boolean
+  onClose: () => void
+  onCreate: () => void
+  onRename: () => void
+  onDelete: () => void
+}
 
 export function ProjectDialogs({
   dialog,
   activeProject,
   nameInput,
   setNameInput,
-  slug,
+  slugPreview,
   loading,
-  close,
+  onClose,
+  onCreate,
+  onRename,
+  onDelete,
 }: Props) {
   return (
     <>
@@ -40,9 +44,10 @@ export function ProjectDialogs({
         open={dialog === "create"}
         nameInput={nameInput}
         setNameInput={setNameInput}
-        slug={slug}
+        slugPreview={slugPreview}
         loading={loading}
-        onClose={close}
+        onClose={onClose}
+        onCreate={onCreate}
       />
       <RenameProjectDialog
         open={dialog === "rename"}
@@ -50,13 +55,15 @@ export function ProjectDialogs({
         nameInput={nameInput}
         setNameInput={setNameInput}
         loading={loading}
-        onClose={close}
+        onClose={onClose}
+        onRename={onRename}
       />
       <DeleteProjectDialog
         open={dialog === "delete"}
         activeProject={activeProject}
         loading={loading}
-        onClose={close}
+        onClose={onClose}
+        onDelete={onDelete}
       />
     </>
   )
@@ -66,17 +73,23 @@ function CreateProjectDialog({
   open,
   nameInput,
   setNameInput,
-  slug,
+  slugPreview,
   loading,
   onClose,
+  onCreate,
 }: {
   open: boolean
   nameInput: string
   setNameInput: (v: string) => void
-  slug: string
+  slugPreview: string
   loading: boolean
   onClose: () => void
+  onCreate: () => void
 }) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" && nameInput.trim() && !loading) onCreate()
+  }
+
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
       <DialogContent showCloseButton>
@@ -93,18 +106,19 @@ function CreateProjectDialog({
             placeholder="Project name"
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
           <p className="text-xs text-muted-foreground">
-            {" "}
+            Room ID:{" "}
             <span className="font-mono text-foreground">
-              {slug || <span className="text-muted-foreground"></span>}
+              {slugPreview || <span className="text-muted-foreground italic">derived from name</span>}
             </span>
           </p>
         </div>
 
         <DialogFooter showCloseButton>
-          <Button disabled={!nameInput.trim() || loading} onClick={onClose}>
-            Create Project
+          <Button disabled={!nameInput.trim() || loading} onClick={onCreate}>
+            {loading ? "Creating…" : "Create Project"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -119,13 +133,15 @@ function RenameProjectDialog({
   setNameInput,
   loading,
   onClose,
+  onRename,
 }: {
   open: boolean
-  activeProject: { name: string } | null
+  activeProject: ProjectRef | null
   nameInput: string
   setNameInput: (v: string) => void
   loading: boolean
   onClose: () => void
+  onRename: () => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -137,7 +153,7 @@ function RenameProjectDialog({
   }, [open])
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" && nameInput.trim()) onClose()
+    if (e.key === "Enter" && nameInput.trim() && !loading) onRename()
   }
 
   return (
@@ -159,11 +175,8 @@ function RenameProjectDialog({
         />
 
         <DialogFooter showCloseButton>
-          <Button
-            disabled={!nameInput.trim() || loading}
-            onClick={onClose}
-          >
-            Rename
+          <Button disabled={!nameInput.trim() || loading} onClick={onRename}>
+            {loading ? "Renaming…" : "Rename"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -176,11 +189,13 @@ function DeleteProjectDialog({
   activeProject,
   loading,
   onClose,
+  onDelete,
 }: {
   open: boolean
-  activeProject: { name: string } | null
+  activeProject: ProjectRef | null
   loading: boolean
   onClose: () => void
+  onDelete: () => void
 }) {
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
@@ -194,8 +209,8 @@ function DeleteProjectDialog({
         </DialogHeader>
 
         <DialogFooter showCloseButton>
-          <Button variant="destructive" disabled={loading} onClick={onClose}>
-            Delete
+          <Button variant="destructive" disabled={loading} onClick={onDelete}>
+            {loading ? "Deleting…" : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

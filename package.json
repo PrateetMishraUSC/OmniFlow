@@ -16,7 +16,7 @@
     "@prisma/client": "^7.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "dotevn": "^0.0.1-security",
+    "dotenv": "^0.0.1-security",
     "lucide-react": "^1.17.0",
     "next": "16.2.6",
     "pg": "^8.21.0",
