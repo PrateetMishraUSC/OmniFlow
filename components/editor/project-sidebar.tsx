@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { mockProjects, type Project } from "@/lib/mock-projects"
+import type { ProjectRef } from "@/lib/projects"
 
 interface ProjectSidebarProps {
   isOpen: boolean
   onClose: () => void
   onOpenCreate: () => void
-  onRename: (project: Project) => void
-  onDelete: (project: Project) => void
+  onRename: (project: ProjectRef) => void
+  onDelete: (project: ProjectRef) => void
+  ownedProjects: ProjectRef[]
+  sharedProjects: ProjectRef[]
   className?: string
 }
 
@@ -22,11 +24,10 @@ export function ProjectSidebar({
   onOpenCreate,
   onRename,
   onDelete,
+  ownedProjects,
+  sharedProjects,
   className,
 }: ProjectSidebarProps) {
-  const ownedProjects = mockProjects.filter((p) => p.owned)
-  const sharedProjects = mockProjects.filter((p) => !p.owned)
-
   return (
     <>
       {/* Mobile backdrop scrim */}
@@ -126,9 +127,9 @@ function ProjectItem({
   onDelete,
   showActions,
 }: {
-  project: Project
-  onRename: (project: Project) => void
-  onDelete: (project: Project) => void
+  project: ProjectRef
+  onRename: (project: ProjectRef) => void
+  onDelete: (project: ProjectRef) => void
   showActions: boolean
 }) {
   return (
