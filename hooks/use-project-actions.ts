@@ -26,6 +26,7 @@ export function useProjectActions() {
   const router = useRouter()
   const params = useParams()
   const activeWorkspaceId =
+    params && typeof params.roomId === "string" ? params.roomId :
     params && typeof params.id === "string" ? params.id : null
 
   const [dialog, setDialog] = useState<DialogType>(null)
