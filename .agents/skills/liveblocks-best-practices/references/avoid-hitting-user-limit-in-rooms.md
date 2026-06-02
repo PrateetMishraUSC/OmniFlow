@@ -46,7 +46,7 @@ const liveblocks = new Liveblocks({
   secret: process.env.LIVEBLOCKS_SECRET_KEY!,
 });
 
-async function Page() {
+export default async function Page() {
   const storage = await liveblocks.getStorageDocument("my-room-id", "json");
 
   return <ReadOnlyApp storage={storage} />
