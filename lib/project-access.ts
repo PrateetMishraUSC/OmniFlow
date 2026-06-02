@@ -10,7 +10,7 @@ export async function getCurrentUserIdentity(): Promise<UserIdentity | null> {
   const { userId } = await auth();
   if (!userId) return null;
   const user = await currentUser();
-  const email = user?.emailAddresses?.[0]?.emailAddress ?? null;
+  const email = user?.primaryEmailAddress?.emailAddress ?? null;
   return { userId, email };
 }
 
