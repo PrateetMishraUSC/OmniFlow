@@ -8,10 +8,12 @@ import { cn } from "@/lib/utils"
 interface EditorNavbarProps {
   isOpen: boolean
   onToggle: () => void
+  title?: string
+  actions?: React.ReactNode
   className?: string
 }
 
-export function EditorNavbar({ isOpen, onToggle, className }: EditorNavbarProps) {
+export function EditorNavbar({ isOpen, onToggle, title, actions, className }: EditorNavbarProps) {
   return (
     <header
       className={cn(
@@ -26,7 +28,15 @@ export function EditorNavbar({ isOpen, onToggle, className }: EditorNavbarProps)
         </Button>
       </div>
 
+      {title && (
+        <span className="ml-2 text-sm font-medium text-foreground truncate max-w-xs">
+          {title}
+        </span>
+      )}
+
       <div className="flex-1" />
+
+      {actions && <div className="flex items-center gap-1 px-2">{actions}</div>}
 
       <div className="flex items-center px-3">
         <UserButton />

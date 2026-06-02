@@ -15,6 +15,7 @@ interface ProjectSidebarProps {
   onDelete: (project: ProjectRef) => void
   ownedProjects: ProjectRef[]
   sharedProjects: ProjectRef[]
+  activeRoomId?: string
   className?: string
 }
 
@@ -26,6 +27,7 @@ export function ProjectSidebar({
   onDelete,
   ownedProjects,
   sharedProjects,
+  activeRoomId,
   className,
 }: ProjectSidebarProps) {
   return (
@@ -80,6 +82,7 @@ export function ProjectSidebar({
                       onRename={onRename}
                       onDelete={onDelete}
                       showActions
+                      isActive={project.id === activeRoomId}
                     />
                   ))}
                 </ul>
@@ -102,6 +105,7 @@ export function ProjectSidebar({
                       onRename={onRename}
                       onDelete={onDelete}
                       showActions={false}
+                      isActive={project.id === activeRoomId}
                     />
                   ))}
                 </ul>
@@ -126,14 +130,16 @@ function ProjectItem({
   onRename,
   onDelete,
   showActions,
+  isActive,
 }: {
   project: ProjectRef
   onRename: (project: ProjectRef) => void
   onDelete: (project: ProjectRef) => void
   showActions: boolean
+  isActive?: boolean
 }) {
   return (
-    <li className="group flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-muted/50">
+    <li className={cn("group flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-muted/50", isActive && "bg-muted")}>
       <span className="flex-1 truncate text-sm text-foreground">{project.name}</span>
       {showActions && (
         <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">

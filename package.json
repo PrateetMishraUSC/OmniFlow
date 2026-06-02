@@ -16,7 +16,7 @@
     "@prisma/client": "^7.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "dotenv": "^0.0.1-security",
+    "dotenv": "^16.6.1",
     "lucide-react": "^1.17.0",
     "next": "16.2.6",
     "pg": "^8.21.0",
@@ -41,6 +41,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.8",
     "zeptomatch": "^1.2.2"
   }
 }

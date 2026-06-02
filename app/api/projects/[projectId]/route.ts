@@ -20,8 +20,11 @@ export async function PATCH(
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => ({}));
-  const name: string = body?.name?.trim() || "Untitled Project";
+  const body: Record<string, unknown> = await request.json().catch(() => ({}));
+  const name =
+    typeof body.name === "string" && body.name.trim().length > 0
+      ? body.name.trim()
+      : "Untitled Project";
 
   const updated = await prisma.project.update({
     where: { id: projectId },

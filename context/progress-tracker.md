@@ -4,7 +4,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 07: Wire Editor — Complete
+- Feature 09: Share Dialog — Complete
 
 ## Current Goal
 
@@ -19,6 +19,8 @@ Update this file whenever the current phase, active feature, or implementation s
 - 05-prisma: Project and ProjectCollaborator models in prisma/models/project.prisma (status enum DRAFT/ARCHIVED, cascade delete, unique/index constraints); lib/prisma.ts cached singleton branching on prisma+postgres:// (Accelerate) vs direct @prisma/adapter-pg; migration applied (20260601082723_init_project_models); client generated to app/generated/prisma/. Workaround: zeptomatch CJS shim patched into @prisma/dev for Node 20 compatibility; prisma.config.ts updated to load .env.local.
 - 06-project-apis: REST endpoints in app/api/projects/route.ts (GET list, POST create) and app/api/projects/[projectId]/route.ts (PATCH rename, DELETE delete); Clerk userId used as ownerId; 401 for unauthenticated, 403 for non-owner mutations; default name "Untitled Project". next.config.ts updated with serverExternalPackages for Prisma Accelerate optional deps; lib/prisma.ts uses eval('require') to prevent Turbopack from statically resolving uninstalled Accelerate packages.
 - 07-wire-editor: app/editor/page.tsx converted to async server component using getProjectsForUser() (lib/projects.ts) to fetch owned and shared projects server-side; useProjectDialogs replaced by useProjectActions hook (hooks/use-project-actions.ts) with create (slug+6-char suffix roomId, POST, navigate), rename (PATCH, refresh), and delete (DELETE, redirect if active workspace else refresh) mutations; components/editor/editor-client.tsx client wrapper holds sidebar/dialog state; ProjectSidebar updated to accept ownedProjects/sharedProjects props; ProjectDialogs wired to onCreate/onRename/onDelete handlers with loading states; POST /api/projects accepts optional custom id for roomId alignment.
+- 08-editor-workspace-shell: app/editor/[roomId]/page.tsx server component with server-side access checks (redirect /sign-in if unauthenticated, AccessDenied for missing/unauthorized projects); lib/project-access.ts with getCurrentUserIdentity() and getAccessibleProject() helpers; components/editor/access-denied.tsx centered lock-icon denial page; components/editor/workspace-client.tsx client wrapper with full-viewport layout (navbar with project name + Share button + AI toggle, ProjectSidebar with active room highlighted, dark canvas placeholder, collapsible AI sidebar placeholder); EditorNavbar extended with optional title and actions props; ProjectSidebar extended with activeRoomId prop for item highlighting; use-project-actions.ts updated to detect roomId param for delete-redirect logic.
+- 09-share-dialog: GET/POST /api/projects/[projectId]/collaborators (list enriched with Clerk name+avatar, invite by email with upsert, ownership enforced); DELETE /api/projects/[projectId]/collaborators/[email] (owner-only remove, URL-decoded email); components/editor/share-dialog.tsx self-contained dialog (fetches on open, owner sees invite input + remove buttons, collaborators see read-only list, Clerk name/avatar with initials fallback, copy-link button with 2s "Copied!" feedback); Share button in workspace navbar opens dialog.
 
 ## In Progress
 
