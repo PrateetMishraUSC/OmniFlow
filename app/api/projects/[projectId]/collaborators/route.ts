@@ -56,7 +56,10 @@ export async function GET(
 
   if (rows.length > 0) {
     const emails = rows.map((r) => r.email);
-    const result = await client.users.getUserList({ emailAddress: emails });
+    const result = await client.users.getUserList({
+      emailAddress: emails,
+      limit: Math.min(emails.length, 500),
+    });
     const byEmail = new Map(
       result.data.flatMap((u) =>
         u.emailAddresses.map((ea) => [

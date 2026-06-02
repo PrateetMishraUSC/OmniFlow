@@ -17,6 +17,92 @@ interface ProjectSidebarProps {
   sharedProjects: ProjectRef[]
   activeRoomId?: string
   className?: string
+  /**
+   * "overlay" (default): fixed panel that floats over content.
+   * "push": inline panel; parent controls visibility via width transition.
+   */
+  variant?: "overlay" | "push"
+}
+
+function SidebarContent({
+  onClose,
+  onOpenCreate,
+  onRename,
+  onDelete,
+  ownedProjects,
+  sharedProjects,
+  activeRoomId,
+}: Omit<ProjectSidebarProps, "isOpen" | "className" | "variant">) {
+  return (
+    <>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+        <span className="text-sm font-medium text-foreground">Project</span>
+        <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close sidebar">
+          <X />
+        </Button>
+      </div>
+
+      <Tabs defaultValue="my-projects" className="flex-1 flex flex-col min-h-0 px-3 pt-3">
+        <TabsList className="w-full">
+          <TabsTrigger value="my-projects" className="flex-1">My Projects</TabsTrigger>
+          <TabsTrigger value="shared" className="flex-1">Shared</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="my-projects" className="flex-1 min-h-0">
+          {ownedProjects.length === 0 ? (
+            <div className="flex flex-1 items-center justify-center h-full">
+              <span className="text-sm text-muted-foreground">No projects yet</span>
+            </div>
+          ) : (
+            <ScrollArea className="h-full">
+              <ul className="py-1">
+                {ownedProjects.map((project) => (
+                  <ProjectItem
+                    key={project.id}
+                    project={project}
+                    onRename={onRename}
+                    onDelete={onDelete}
+                    showActions
+                    isActive={project.id === activeRoomId}
+                  />
+                ))}
+              </ul>
+            </ScrollArea>
+          )}
+        </TabsContent>
+
+        <TabsContent value="shared" className="flex-1 min-h-0">
+          {sharedProjects.length === 0 ? (
+            <div className="flex flex-1 items-center justify-center h-full">
+              <span className="text-sm text-muted-foreground">Nothing shared yet</span>
+            </div>
+          ) : (
+            <ScrollArea className="h-full">
+              <ul className="py-1">
+                {sharedProjects.map((project) => (
+                  <ProjectItem
+                    key={project.id}
+                    project={project}
+                    onRename={onRename}
+                    onDelete={onDelete}
+                    showActions={false}
+                    isActive={project.id === activeRoomId}
+                  />
+                ))}
+              </ul>
+            </ScrollArea>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      <div className="p-3 border-t border-border shrink-0">
+        <Button className="w-full gap-2" variant="outline" onClick={onOpenCreate}>
+          <Plus />
+          New Project
+        </Button>
+      </div>
+    </>
+  )
 }
 
 export function ProjectSidebar({
@@ -29,7 +115,29 @@ export function ProjectSidebar({
   sharedProjects,
   activeRoomId,
   className,
+  variant = "overlay",
 }: ProjectSidebarProps) {
+  if (variant === "push") {
+    return (
+      <aside
+        id="editor-project-sidebar"
+        aria-hidden={!isOpen}
+        inert={!isOpen}
+        className={cn("h-full w-72 flex flex-col bg-card border-r border-border", className)}
+      >
+        <SidebarContent
+          onClose={onClose}
+          onOpenCreate={onOpenCreate}
+          onRename={onRename}
+          onDelete={onDelete}
+          ownedProjects={ownedProjects}
+          sharedProjects={sharedProjects}
+          activeRoomId={activeRoomId}
+        />
+      </aside>
+    )
+  }
+
   return (
     <>
       {/* Mobile backdrop scrim */}
@@ -54,72 +162,15 @@ export function ProjectSidebar({
           className
         )}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <span className="text-sm font-medium text-foreground">Project</span>
-          <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close sidebar">
-            <X />
-          </Button>
-        </div>
-
-        <Tabs defaultValue="my-projects" className="flex-1 flex flex-col min-h-0 px-3 pt-3">
-          <TabsList className="w-full">
-            <TabsTrigger value="my-projects" className="flex-1">My Projects</TabsTrigger>
-            <TabsTrigger value="shared" className="flex-1">Shared</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="my-projects" className="flex-1 min-h-0">
-            {ownedProjects.length === 0 ? (
-              <div className="flex flex-1 items-center justify-center h-full">
-                <span className="text-sm text-muted-foreground">No projects yet</span>
-              </div>
-            ) : (
-              <ScrollArea className="h-full">
-                <ul className="py-1">
-                  {ownedProjects.map((project) => (
-                    <ProjectItem
-                      key={project.id}
-                      project={project}
-                      onRename={onRename}
-                      onDelete={onDelete}
-                      showActions
-                      isActive={project.id === activeRoomId}
-                    />
-                  ))}
-                </ul>
-              </ScrollArea>
-            )}
-          </TabsContent>
-
-          <TabsContent value="shared" className="flex-1 min-h-0">
-            {sharedProjects.length === 0 ? (
-              <div className="flex flex-1 items-center justify-center h-full">
-                <span className="text-sm text-muted-foreground">Nothing shared yet</span>
-              </div>
-            ) : (
-              <ScrollArea className="h-full">
-                <ul className="py-1">
-                  {sharedProjects.map((project) => (
-                    <ProjectItem
-                      key={project.id}
-                      project={project}
-                      onRename={onRename}
-                      onDelete={onDelete}
-                      showActions={false}
-                      isActive={project.id === activeRoomId}
-                    />
-                  ))}
-                </ul>
-              </ScrollArea>
-            )}
-          </TabsContent>
-        </Tabs>
-
-        <div className="p-3 border-t border-border">
-          <Button className="w-full gap-2" variant="outline" onClick={onOpenCreate}>
-            <Plus />
-            New Project
-          </Button>
-        </div>
+        <SidebarContent
+          onClose={onClose}
+          onOpenCreate={onOpenCreate}
+          onRename={onRename}
+          onDelete={onDelete}
+          ownedProjects={ownedProjects}
+          sharedProjects={sharedProjects}
+          activeRoomId={activeRoomId}
+        />
       </aside>
     </>
   )
