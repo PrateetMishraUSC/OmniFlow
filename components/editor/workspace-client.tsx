@@ -10,6 +10,7 @@ import { CanvasRoom } from "@/components/editor/canvas-room"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useProjectActions } from "@/hooks/use-project-actions"
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import type { ProjectRef } from "@/lib/projects"
 
 interface WorkspaceClientProps {
@@ -29,6 +30,11 @@ export function WorkspaceClient({
   const [aiOpen, setAiOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const actions = useProjectActions()
+
+  useKeyboardShortcuts({
+    toggleSidebar: () => setSidebarOpen((v) => !v),
+    toggleAI: () => setAiOpen((v) => !v),
+  })
 
   const navActions = (
     <>
@@ -85,8 +91,9 @@ export function WorkspaceClient({
           aiOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <div className="flex items-center px-4 py-3 border-b border-border shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
           <span className="text-sm font-medium">AI Assistant</span>
+          <span className="text-xs text-muted-foreground"><i><b>⌥ or ⎇ + S</b></i></span>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">AI chat coming soon</p>

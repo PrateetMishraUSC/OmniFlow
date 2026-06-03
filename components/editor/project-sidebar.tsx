@@ -37,9 +37,12 @@ function SidebarContent({
     <>
       <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
         <span className="text-sm font-medium text-foreground">Project</span>
-        <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close sidebar">
-          <X />
-        </Button>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground"><i><b>⌥ or ⎇ + A</b></i></span>
+          <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close sidebar">
+            <X />
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="my-projects" className="flex-1 flex flex-col min-h-0 px-3 pt-3">
