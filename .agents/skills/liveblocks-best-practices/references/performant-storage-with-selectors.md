@@ -105,6 +105,8 @@ function Shape({ id }: { id: string }) {
     shallow
   );
 
+  if (!shape) return null;
+
   return <div style={{ backgroundColor: shape.color }} />;
 }
 ```
