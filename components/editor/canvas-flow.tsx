@@ -6,7 +6,6 @@ import {
   ReactFlow,
   Background,
   BackgroundVariant,
-  MiniMap,
   ConnectionMode,
   Panel,
   NodeResizer,
@@ -88,6 +87,8 @@ const CanvasNodeComponent = memo(({ id, data, selected }: NodeProps<CanvasNode>)
             return (
               <button
                 key={color.bg}
+                aria-label={`Set node color ${color.bg}`}
+                aria-pressed={isActive}
                 className="nodrag nopan relative h-4 w-4 rounded-full transition-transform duration-100 hover:scale-110"
                 style={{
                   background: color.bg,
@@ -220,6 +221,14 @@ const CanvasEdgeComponent = memo(
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+    useEffect(() => {
+      return () => {
+        if (hoverTimeoutRef.current) {
+          clearTimeout(hoverTimeoutRef.current)
+        }
+      }
+    }, [])
+    
     const arrowType: EdgeArrowType = data?.arrowType ?? "source-to-target"
     const label = data?.label ?? ""
     const isActive = isHovered || selected
@@ -424,11 +433,13 @@ function ControlButton({
   onClick,
   disabled,
   title,
+  ariaLabel,
   children,
 }: {
   onClick: () => void
   disabled?: boolean
   title?: string
+  ariaLabel: string
   children: ReactNode
 }) {
   return (
@@ -436,6 +447,7 @@ function ControlButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
+      aria-label={ariaLabel}
       className="flex items-center justify-center rounded-md p-1 transition-colors"
       style={{
         color: disabled ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.55)",
@@ -475,13 +487,13 @@ function CanvasControls() {
         className="flex items-center gap-0.5 rounded-full px-2 py-1.5"
         style={{ background: "#18181c", border: "1px solid rgba(255,255,255,0.1)" }}
       >
-        <ControlButton onClick={() => instance.zoomOut({ duration: 200 })} title="Zoom out (-)">
+        <ControlButton ariaLabel="Zoom out" onClick={() => instance.zoomOut({ duration: 200 })} title="Zoom out (-)">
           <ZoomOut size={14} />
         </ControlButton>
-        <ControlButton onClick={() => instance.fitView({ duration: 300 })} title="Fit view">
+        <ControlButton ariaLabel="Fit View" onClick={() => instance.fitView({ duration: 300 })} title="Fit view">
           <Maximize2 size={14} />
         </ControlButton>
-        <ControlButton onClick={() => instance.zoomIn({ duration: 200 })} title="Zoom in (+)">
+        <ControlButton ariaLabel="Zoom In" onClick={() => instance.zoomIn({ duration: 200 })} title="Zoom in (+)">
           <ZoomIn size={14} />
         </ControlButton>
 
@@ -495,10 +507,10 @@ function CanvasControls() {
           }}
         />
 
-        <ControlButton onClick={undo} disabled={!canUndo} title="Undo (Cmd+Z)">
+        <ControlButton ariaLabel="Undo" onClick={undo} disabled={!canUndo} title="Undo (Cmd+Z)">
           <Undo2 size={14} />
         </ControlButton>
-        <ControlButton onClick={redo} disabled={!canRedo} title="Redo (Cmd+Shift+Z)">
+        <ControlButton ariaLabel="Redo" onClick={redo} disabled={!canRedo} title="Redo (Cmd+Shift+Z)">
           <Redo2 size={14} />
         </ControlButton>
       </div>
@@ -582,12 +594,7 @@ export function CanvasFlow() {
         lineWidth={1}
         color="rgba(255,255,255,0.06)"
       />
-      <MiniMap
-        nodeColor="#3f3f46"
-        maskColor="rgba(0,0,0,0.6)"
-        style={{ background: "#18181c" }}
-      />
-      <CanvasControls />
+<CanvasControls />
       <Panel position="bottom-center" style={{ marginBottom: "16px" }}>
         <ShapePanel />
       </Panel>

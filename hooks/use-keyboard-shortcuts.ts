@@ -32,6 +32,7 @@ export function useKeyboardShortcuts({
 }: UseKeyboardShortcutsOptions) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if (e.repeat) return
       if (isEditingField(e)) return
 
       const ctrl = e.metaKey || e.ctrlKey
