@@ -29,9 +29,10 @@ export function EditorNavbar({ isOpen, onToggle, title, actions, className }: Ed
       </div>
 
       {title && (
-        <span className="ml-2 text-sm font-medium text-foreground truncate max-w-xs">
-          {title}
-        </span>
+        <div className="ml-2 flex flex-col justify-center leading-none truncate max-w-xs">
+          <span className="text-sm font-medium text-foreground truncate">{title}</span>
+          <span className="text-[10px] text-muted-foreground">workspace</span>
+        </div>
       )}
 
       <div className="flex-1" />

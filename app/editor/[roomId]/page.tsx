@@ -19,6 +19,7 @@ export default async function EditorRoomPage(props: PageProps<"/editor/[roomId]"
     <WorkspaceClient
       projectName={project.name}
       roomId={roomId}
+      projectId={project.id}
       ownedProjects={owned}
       sharedProjects={shared}
     />

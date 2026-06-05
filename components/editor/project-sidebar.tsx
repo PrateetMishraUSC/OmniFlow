@@ -1,6 +1,7 @@
 "use client"
 
 import { Pencil, Trash2, X, Plus } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -35,10 +36,10 @@ function SidebarContent({
 }: Omit<ProjectSidebarProps, "isOpen" | "className" | "variant">) {
   return (
     <>
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
-        <span className="text-sm font-medium text-foreground">Project</span>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-surface-border shrink-0">
+        <span className="text-sm font-semibold text-copy-primary">Project</span>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground"><i><b>⌥ or ⎇ + A</b></i></span>
+          <span className="text-xs text-copy-muted"><i><b>⌥ or ⎇ + A</b></i></span>
           <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close sidebar">
             <X />
           </Button>
@@ -46,9 +47,9 @@ function SidebarContent({
       </div>
 
       <Tabs defaultValue="my-projects" className="flex-1 flex flex-col min-h-0 px-3 pt-3">
-        <TabsList className="w-full">
-          <TabsTrigger value="my-projects" className="flex-1">My Projects</TabsTrigger>
-          <TabsTrigger value="shared" className="flex-1">Shared</TabsTrigger>
+        <TabsList className="w-full bg-subtle">
+          <TabsTrigger value="my-projects" className="flex-1 text-copy-muted data-active:bg-[rgba(240,160,48,0.12)] data-active:text-[#f0a030]">My Projects</TabsTrigger>
+          <TabsTrigger value="shared" className="flex-1 text-copy-muted data-active:bg-[rgba(240,160,48,0.12)] data-active:text-[#f0a030]">Shared</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-projects" className="flex-1 min-h-0">
@@ -98,8 +99,11 @@ function SidebarContent({
         </TabsContent>
       </Tabs>
 
-      <div className="p-3 border-t border-border shrink-0">
-        <Button className="w-full gap-2" variant="outline" onClick={onOpenCreate}>
+      <div className="p-3 border-t border-surface-border shrink-0">
+        <Button
+          className="w-full gap-2 bg-[#f0a030] hover:bg-[#f0a030]/90 text-base border-0"
+          onClick={onOpenCreate}
+        >
           <Plus />
           New Project
         </Button>
@@ -126,7 +130,7 @@ export function ProjectSidebar({
         id="editor-project-sidebar"
         aria-hidden={!isOpen}
         inert={!isOpen}
-        className={cn("h-full w-72 flex flex-col bg-card border-r border-border", className)}
+        className={cn("h-full w-72 flex flex-col bg-base/95 border-r border-surface-border backdrop-blur-sm", className)}
       >
         <SidebarContent
           onClose={onClose}
@@ -159,7 +163,7 @@ export function ProjectSidebar({
         inert={!isOpen}
         className={cn(
           "fixed top-12 left-0 bottom-0 z-30 w-72",
-          "flex flex-col bg-card border-r border-border",
+          "flex flex-col bg-base/95 border-r border-surface-border backdrop-blur-sm",
           "transition-transform duration-200 ease-in-out",
           isOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none",
           className
@@ -193,8 +197,16 @@ function ProjectItem({
   isActive?: boolean
 }) {
   return (
-    <li className={cn("group flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-muted/50", isActive && "bg-muted")}>
-      <span className="flex-1 truncate text-sm text-foreground">{project.name}</span>
+    <li className={cn(
+      "group flex items-center gap-1 rounded-lg px-2 py-1.5 transition-colors hover:bg-subtle",
+      isActive && "bg-[rgba(240,160,48,0.10)] border-l-2 border-[#f0a030] pl-[6px]"
+    )}>
+      <Link
+        href={`/editor/${project.id}`}
+        className={cn("flex-1 truncate text-sm", isActive ? "text-[#f0a030]" : "text-copy-primary")}
+      >
+        {project.name}
+      </Link>
       {showActions && (
         <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
           <Button

@@ -1,19 +1,15 @@
 "use client"
 
-import { LiveblocksProvider, RoomProvider, ClientSideSuspense } from "@liveblocks/react"
-import { LiveObject, LiveMap } from "@liveblocks/client"
+import { ClientSideSuspense } from "@liveblocks/react"
 import { CanvasFlow } from "./canvas-flow"
+import type { CanvasTemplate } from "./starter-templates"
+import type { SaveStatus } from "@/hooks/use-canvas-autosave"
 
 interface CanvasRoomProps {
-  roomId: string
-}
-
-function CanvasError() {
-  return (
-    <div className="flex h-full w-full items-center justify-center">
-      <p className="text-sm text-muted-foreground">Failed to connect to canvas. Please refresh.</p>
-    </div>
-  )
+  projectId: string
+  pendingTemplate?: CanvasTemplate | null
+  onTemplateConsumed?: () => void
+  onSaveStatusChange?: (status: SaveStatus) => void
 }
 
 function CanvasLoading() {
@@ -24,28 +20,28 @@ function CanvasLoading() {
   )
 }
 
-export function CanvasRoom({ roomId }: CanvasRoomProps) {
+function CanvasError() {
   return (
-    <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
-      <RoomProvider
-        id={roomId}
-        initialPresence={{ cursor: null, isThinking: false }}
-        initialStorage={{
-          flow: new LiveObject({
-            nodes: new LiveMap(),
-            edges: new LiveMap(),
-          }),
-        }}
-      >
-        <ClientSideSuspense fallback={<CanvasLoading />}>
-          {() => (
-            <ErrorBoundaryCanvas>
-              <CanvasFlow />
-            </ErrorBoundaryCanvas>
-          )}
-        </ClientSideSuspense>
-      </RoomProvider>
-    </LiveblocksProvider>
+    <div className="flex h-full w-full items-center justify-center">
+      <p className="text-sm text-muted-foreground">Failed to connect to canvas. Please refresh.</p>
+    </div>
+  )
+}
+
+export function CanvasRoom({ projectId, pendingTemplate, onTemplateConsumed, onSaveStatusChange }: CanvasRoomProps) {
+  return (
+    <ClientSideSuspense fallback={<CanvasLoading />}>
+      {() => (
+        <ErrorBoundaryCanvas>
+          <CanvasFlow
+            projectId={projectId}
+            pendingTemplate={pendingTemplate}
+            onTemplateConsumed={onTemplateConsumed}
+            onSaveStatusChange={onSaveStatusChange}
+          />
+        </ErrorBoundaryCanvas>
+      )}
+    </ClientSideSuspense>
   )
 }
 
