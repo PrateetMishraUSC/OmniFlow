@@ -616,10 +616,13 @@ export function CanvasFlow({ projectId, pendingTemplate, onTemplateConsumed, onS
   const updateMyPresence = useUpdateMyPresence()
   const instanceRef = useRef<ReactFlowInstance<CanvasNode, CanvasEdge> | null>(null)
   const nodesRef = useRef(nodes)
-  nodesRef.current = nodes
   const edgesRef = useRef(edges)
-  edgesRef.current = edges
   const loadedRef = useRef(false)
+
+  useEffect(() => {
+    nodesRef.current = nodes
+    edgesRef.current = edges
+  }, [nodes, edges])
 
   // Load saved canvas state only when the Liveblocks room is empty (no active collaboration)
   useEffect(() => {

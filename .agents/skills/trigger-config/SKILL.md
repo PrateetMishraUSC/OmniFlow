@@ -36,11 +36,15 @@ export default defineConfig({
       minTimeoutInMs: 1000,
       maxTimeoutInMs: 10000,
       factor: 2,
+      randomize: true,
     },
   },
 
   build: {
     extensions: [], // Add extensions here
+    autoDetectExternal: true,
+    keepNames: true,
+    minify: false,
   },
 });
 ```

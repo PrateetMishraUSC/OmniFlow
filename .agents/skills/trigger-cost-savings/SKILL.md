@@ -25,7 +25,7 @@ To analyze your runs, you need the Trigger.dev MCP server installed.
 
 Run this command to install it:
 
-  npx trigger.dev@latest install-mcp
+  npx trigger.dev@4.4.6 install-mcp
 
 This launches an interactive wizard that configures the MCP server for your AI client.
 ```
