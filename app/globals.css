@@ -148,8 +148,8 @@
     --text-secondary: #c0c0cc;
     --text-muted: #808090;
     --text-faint: #505060;
-    --accent-primary: #00c8d4;
-    --accent-primary-dim: rgba(0, 200, 212, 0.12);
+    --accent-primary: #f0a030;
+    --accent-primary-dim: rgba(240, 160, 48, 0.12);
     --accent-ai: #6457f9;
     --accent-ai-text: #8b82ff;
     --state-error: #ff4d4f;

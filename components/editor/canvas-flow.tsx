@@ -2,6 +2,7 @@
 
 import "@xyflow/react/dist/style.css"
 import { memo, useCallback, useRef, useState, useEffect, type ReactNode } from "react"
+import { createPortal } from "react-dom"
 import {
   ReactFlow,
   Background,
@@ -15,18 +16,22 @@ import {
   EdgeLabelRenderer,
   getSmoothStepPath,
   useReactFlow,
+  useViewport,
   type ReactFlowInstance,
   type NodeProps,
   type EdgeProps,
 } from "@xyflow/react"
 import { useLiveblocksFlow } from "@liveblocks/react-flow"
-import { useUndo, useRedo, useCanUndo, useCanRedo } from "@liveblocks/react"
+import { useUndo, useRedo, useCanUndo, useCanRedo, useUpdateMyPresence, useOthers } from "@liveblocks/react"
 import { ZoomIn, ZoomOut, Maximize2, Undo2, Redo2 } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
 import type { CanvasNode, CanvasEdge, CanvasEdgeData, EdgeArrowType } from "@/types/canvas"
 import { NODE_COLORS } from "@/types/canvas"
 import { ShapePanel, SHAPE_DRAG_TYPE, type ShapeDragPayload } from "./shape-panel"
 import { ShapeRenderer } from "./shape-renderer"
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
+import { useCanvasAutosave, type SaveStatus } from "@/hooks/use-canvas-autosave"
+import type { CanvasTemplate } from "./starter-templates"
 
 let nodeCounter = 0
 
@@ -429,6 +434,78 @@ const CanvasEdgeComponent = memo(
 )
 CanvasEdgeComponent.displayName = "CanvasEdgeComponent"
 
+
+function CursorPointer({ color }: { color: string }) {
+  return (
+    <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M1 1L1 15L4.5 11.5L7.5 18L9 17.5L6 11L11 11L1 1Z"
+        fill={color}
+        stroke="rgba(0,0,0,0.45)"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function LiveCursors() {
+  const others = useOthers()
+  const { flowToScreenPosition } = useReactFlow<CanvasNode, CanvasEdge>()
+  useViewport() // re-render on pan/zoom so cursor positions stay accurate
+  const { user } = useUser()
+  const currentUserId = user?.id
+
+  const activeCursors = others.filter((o) => o.id !== currentUserId && o.presence.cursor !== null)
+
+  if (activeCursors.length === 0) return null
+
+  return createPortal(
+    <>
+      {activeCursors.map((other) => {
+        const cursor = other.presence.cursor!
+        const { x, y } = flowToScreenPosition(cursor)
+        const color = other.info?.cursorColor ?? "#6366f1"
+        const name = other.info?.displayName ?? "User"
+        return (
+          <div
+            key={other.connectionId}
+            style={{
+              position: "fixed",
+              left: x,
+              top: y,
+              pointerEvents: "none",
+              zIndex: 9999,
+            }}
+          >
+            <CursorPointer color={color} />
+            <div
+              style={{
+                position: "absolute",
+                top: 16,
+                left: 4,
+                background: color,
+                color: "#fff",
+                padding: "2px 6px",
+                borderRadius: 4,
+                fontSize: "0.65rem",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+                maxWidth: 120,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {name}
+            </div>
+          </div>
+        )
+      })}
+    </>,
+    document.body,
+  )
+}
+
 function ControlButton({
   onClick,
   disabled,
@@ -521,7 +598,14 @@ function CanvasControls() {
 const nodeTypes = { canvasNode: CanvasNodeComponent }
 const edgeTypes = { canvasEdge: CanvasEdgeComponent }
 
-export function CanvasFlow() {
+interface CanvasFlowProps {
+  projectId: string
+  pendingTemplate?: CanvasTemplate | null
+  onTemplateConsumed?: () => void
+  onSaveStatusChange?: (status: SaveStatus) => void
+}
+
+export function CanvasFlow({ projectId, pendingTemplate, onTemplateConsumed, onSaveStatusChange }: CanvasFlowProps) {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onDelete } =
     useLiveblocksFlow<CanvasNode, CanvasEdge>({
       suspense: true,
@@ -529,7 +613,67 @@ export function CanvasFlow() {
       edges: { initial: [] },
     })
 
+  const updateMyPresence = useUpdateMyPresence()
   const instanceRef = useRef<ReactFlowInstance<CanvasNode, CanvasEdge> | null>(null)
+  const nodesRef = useRef(nodes)
+  nodesRef.current = nodes
+  const edgesRef = useRef(edges)
+  edgesRef.current = edges
+  const loadedRef = useRef(false)
+
+  // Load saved canvas state only when the Liveblocks room is empty (no active collaboration)
+  useEffect(() => {
+    if (loadedRef.current) return
+    if (nodesRef.current.length > 0 || edgesRef.current.length > 0) {
+      loadedRef.current = true
+      return
+    }
+    loadedRef.current = true
+
+    fetch(`/api/projects/${projectId}/canvas`)
+      .then((r) => r.json())
+      .then((data: { nodes?: CanvasNode[]; edges?: CanvasEdge[] }) => {
+        const savedNodes = data.nodes ?? []
+        const savedEdges = data.edges ?? []
+        if (savedNodes.length === 0 && savedEdges.length === 0) return
+        // Re-check room is still empty before loading
+        if (nodesRef.current.length > 0 || edgesRef.current.length > 0) return
+        onNodesChange(savedNodes.map((n) => ({ type: "add" as const, item: n })))
+        onEdgesChange(savedEdges.map((e) => ({ type: "add" as const, item: e })))
+        setTimeout(() => instanceRef.current?.fitView({ duration: 400, padding: 0.15 }), 50)
+      })
+      .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useCanvasAutosave({
+    projectId,
+    nodes,
+    edges,
+    onStatusChange: onSaveStatusChange ?? (() => {}),
+  })
+
+  useEffect(() => {
+    if (!pendingTemplate) return
+    const currentNodes = nodesRef.current
+    const currentEdges = edgesRef.current
+
+    onNodesChange([
+      ...currentNodes.map((n) => ({ type: "remove" as const, id: n.id })),
+      ...pendingTemplate.nodes.map((n) => ({ type: "add" as const, item: n })),
+    ])
+    onEdgesChange([
+      ...currentEdges.map((e) => ({ type: "remove" as const, id: e.id })),
+      ...pendingTemplate.edges.map((e) => ({ type: "add" as const, item: e })),
+    ])
+
+    setTimeout(() => {
+      instanceRef.current?.fitView({ duration: 400, padding: 0.15 })
+    }, 50)
+
+    onTemplateConsumed?.()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingTemplate])
 
   const onInit = useCallback((instance: ReactFlowInstance<CanvasNode, CanvasEdge>) => {
     instanceRef.current = instance
@@ -539,6 +683,19 @@ export function CanvasFlow() {
     event.preventDefault()
     event.dataTransfer.dropEffect = "copy"
   }, [])
+
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!instanceRef.current) return
+      const pos = instanceRef.current.screenToFlowPosition({ x: e.clientX, y: e.clientY })
+      updateMyPresence({ cursor: pos })
+    },
+    [updateMyPresence],
+  )
+
+  const onMouseLeave = useCallback(() => {
+    updateMyPresence({ cursor: null })
+  }, [updateMyPresence])
 
   const onDrop = useCallback(
     (event: React.DragEvent) => {
@@ -580,6 +737,8 @@ export function CanvasFlow() {
       onInit={onInit}
       onDragOver={onDragOver}
       onDrop={onDrop}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       connectionMode={ConnectionMode.Loose}
@@ -594,10 +753,11 @@ export function CanvasFlow() {
         lineWidth={1}
         color="rgba(255,255,255,0.06)"
       />
-<CanvasControls />
-      <Panel position="bottom-center" style={{ marginBottom: "16px" }}>
+      <CanvasControls />
+<Panel position="bottom-center" style={{ marginBottom: "16px" }}>
         <ShapePanel />
       </Panel>
+      <LiveCursors />
     </ReactFlow>
   )
 }
