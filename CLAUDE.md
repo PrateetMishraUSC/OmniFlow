@@ -128,7 +128,7 @@ export const parentTask = task({
       { payload: { data: "item2" } },
     ]);
 
-    for (const run of results) {
+    for (const run of results.runs) {
       if (run.ok) {
         console.log("Success:", run.output);
       } else {
@@ -287,7 +287,7 @@ const results = await myTask.batchTriggerAndWait([
   { payload: { userId: "user-2" } },
 ]);
 
-for (const result of results) {
+for (const result of results.runs) {
   if (result.ok) {
     console.log("Result:", result.output);
   }

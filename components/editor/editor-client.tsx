@@ -33,12 +33,27 @@ export function EditorClient({ ownedProjects, sharedProjects }: EditorClientProp
       <main className="flex-1 mt-12 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center px-4">
           <h1 className="text-3xl font-semibold tracking-tight">
-            Create a project or add an existing one
+            <span style={{
+              background: 'linear-gradient(135deg, #4394BF 0%, #56D1E3 55%, #1DE0E7 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>Create a project</span>
+            <span style={{ color: '#ffffff' }}> or add an existing one</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-m">
             Start a new architecture workspace, or choose a project from the sidebar
           </p>
-          <Button onClick={actions.openCreate} className="gap-2 mt-1 text-md">
+          <Button
+            onClick={actions.openCreate}
+            className="gap-2 mt-1 text-md border-0"
+            style={{
+              background: 'linear-gradient(135deg, #4394BF 0%, #56D1E3 55%, #1DE0E7 100%)',
+              color: '#ffffff',
+              boxShadow: '0 0 12px rgba(29, 224, 231, 0.15)',
+              cursor: "pointer"
+            }}
+          >
             <Plus />
             New Project
           </Button>

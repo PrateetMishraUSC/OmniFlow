@@ -23,7 +23,7 @@ import {
 } from "@xyflow/react"
 import { useLiveblocksFlow } from "@liveblocks/react-flow"
 import { useUndo, useRedo, useCanUndo, useCanRedo, useUpdateMyPresence, useOthers } from "@liveblocks/react"
-import { ZoomIn, ZoomOut, Maximize2, Undo2, Redo2 } from "lucide-react"
+import { ZoomIn, ZoomOut, Maximize2, Undo2, Redo2, Loader2 } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
 import type { CanvasNode, CanvasEdge, CanvasEdgeData, EdgeArrowType } from "@/types/canvas"
 import { NODE_COLORS } from "@/types/canvas"
@@ -467,6 +467,7 @@ function LiveCursors() {
         const { x, y } = flowToScreenPosition(cursor)
         const color = other.info?.cursorColor ?? "#6366f1"
         const name = other.info?.displayName ?? "User"
+        const isThinking = other.presence.thinking === true
         return (
           <div
             key={other.connectionId}
@@ -491,11 +492,19 @@ function LiveCursors() {
                 fontSize: "0.65rem",
                 fontWeight: 600,
                 whiteSpace: "nowrap",
-                maxWidth: 120,
+                maxWidth: 140,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
               }}
             >
+              {isThinking && (
+                <Loader2
+                  style={{ width: 8, height: 8, flexShrink: 0, animation: "spin 1s linear infinite" }}
+                />
+              )}
               {name}
             </div>
           </div>
@@ -616,10 +625,13 @@ export function CanvasFlow({ projectId, pendingTemplate, onTemplateConsumed, onS
   const updateMyPresence = useUpdateMyPresence()
   const instanceRef = useRef<ReactFlowInstance<CanvasNode, CanvasEdge> | null>(null)
   const nodesRef = useRef(nodes)
-  nodesRef.current = nodes
   const edgesRef = useRef(edges)
-  edgesRef.current = edges
   const loadedRef = useRef(false)
+
+  useEffect(() => {
+    nodesRef.current = nodes
+    edgesRef.current = edges
+  }, [nodes, edges])
 
   // Load saved canvas state only when the Liveblocks room is empty (no active collaboration)
   useEffect(() => {

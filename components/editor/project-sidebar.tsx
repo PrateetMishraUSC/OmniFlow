@@ -48,8 +48,8 @@ function SidebarContent({
 
       <Tabs defaultValue="my-projects" className="flex-1 flex flex-col min-h-0 px-3 pt-3">
         <TabsList className="w-full bg-subtle">
-          <TabsTrigger value="my-projects" className="flex-1 text-copy-muted data-active:bg-[rgba(240,160,48,0.12)] data-active:text-[#f0a030]">My Projects</TabsTrigger>
-          <TabsTrigger value="shared" className="flex-1 text-copy-muted data-active:bg-[rgba(240,160,48,0.12)] data-active:text-[#f0a030]">Shared</TabsTrigger>
+          <TabsTrigger value="my-projects" className="flex-1 text-copy-muted data-active:bg-[rgba(29,224,231,0.12)] data-active:text-[#1DE0E7]">My Projects</TabsTrigger>
+          <TabsTrigger value="shared" className="flex-1 text-copy-muted data-active:bg-[rgba(29,224,231,0.12)] data-active:text-[#1DE0E7]">Shared</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-projects" className="flex-1 min-h-0">
@@ -101,8 +101,13 @@ function SidebarContent({
 
       <div className="p-3 border-t border-surface-border shrink-0">
         <Button
-          className="w-full gap-2 bg-[#f0a030] hover:bg-[#f0a030]/90 text-base border-0"
+          className="w-full gap-2 text-base border-0"
           onClick={onOpenCreate}
+          style={{
+            background: 'linear-gradient(135deg, #4394BF 0%, #56D1E3 55%, #1DE0E7 100%)',
+            color: '#ffffff',
+            boxShadow: '0 0 12px rgba(29, 224, 231, 0.15)',
+          }}
         >
           <Plus />
           New Project
@@ -130,7 +135,7 @@ export function ProjectSidebar({
         id="editor-project-sidebar"
         aria-hidden={!isOpen}
         inert={!isOpen}
-        className={cn("h-full w-72 flex flex-col bg-base/95 border-r border-surface-border backdrop-blur-sm", className)}
+        className={cn("h-full w-72 flex flex-col bg-card border-r border-surface-border shadow-[4px_0_24px_rgba(0,0,0,0.4)] backdrop-blur-sm", className)}
       >
         <SidebarContent
           onClose={onClose}
@@ -163,7 +168,7 @@ export function ProjectSidebar({
         inert={!isOpen}
         className={cn(
           "fixed top-12 left-0 bottom-0 z-30 w-72",
-          "flex flex-col bg-base/95 border-r border-surface-border backdrop-blur-sm",
+          "flex flex-col bg-card border-r border-surface-border shadow-[4px_0_24px_rgba(0,0,0,0.4)] backdrop-blur-sm",
           "transition-transform duration-200 ease-in-out",
           isOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none",
           className
@@ -199,11 +204,11 @@ function ProjectItem({
   return (
     <li className={cn(
       "group flex items-center gap-1 rounded-lg px-2 py-1.5 transition-colors hover:bg-subtle",
-      isActive && "bg-[rgba(240,160,48,0.10)] border-l-2 border-[#f0a030] pl-[6px]"
+      isActive && "bg-[rgba(29,224,231,0.08)] border-l-2 border-[#1DE0E7] pl-[6px]"
     )}>
       <Link
         href={`/editor/${project.id}`}
-        className={cn("flex-1 truncate text-sm", isActive ? "text-[#f0a030]" : "text-copy-primary")}
+        className={cn("flex-1 truncate text-sm", isActive ? "text-[#1DE0E7]" : "text-copy-primary")}
       >
         {project.name}
       </Link>

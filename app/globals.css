@@ -24,6 +24,8 @@
     --color-brand-dim: var(--accent-primary-dim);
     --color-ai: var(--accent-ai);
     --color-ai-text: var(--accent-ai-text);
+    --color-chat: var(--accent-chat);
+    --color-chat-dim: var(--accent-chat-dim);
     --color-state-error: var(--state-error);
     --color-state-success: var(--state-success);
     --color-state-warning: var(--state-warning);
@@ -152,6 +154,8 @@
     --accent-primary-dim: rgba(240, 160, 48, 0.12);
     --accent-ai: #6457f9;
     --accent-ai-text: #8b82ff;
+    --accent-chat: #62C073;
+    --accent-chat-dim: rgba(98, 192, 115, 0.12);
     --state-error: #ff4d4f;
     --state-success: #34d399;
     --state-warning: #fbbf24;

@@ -125,7 +125,12 @@ export function ShareDialog({ open, onOpenChange, roomId, projectName }: ShareDi
               size="sm"
               onClick={invite}
               disabled={inviting || !emailInput.trim()}
-              className="gap-1.5 shrink-0"
+              className="gap-1.5 shrink-0 border-0"
+              style={{
+                background: 'linear-gradient(135deg, #4394BF 0%, #56D1E3 55%, #1DE0E7 100%)',
+                color: '#ffffff',
+                cursor: "pointer"
+              }}
             >
               <UserPlus className="h-3.5 w-3.5" />
               Invite
@@ -177,15 +182,21 @@ export function ShareDialog({ open, onOpenChange, roomId, projectName }: ShareDi
         {/* Copy link */}
         <div className="-mx-4 -mb-4 flex items-center justify-between rounded-b-xl border-t border-border bg-muted/50 px-4 py-3">
           <span className="text-xs text-muted-foreground">Share via link</span>
-          <Button variant="outline" size="sm" onClick={copyLink} className="gap-1.5 shrink-0">
+          <Button
+          variant="outline"
+          size="sm"
+          onClick={copyLink}
+          className="gap-1.5 shrink-0"
+          style={{ borderColor: 'rgba(29,224,231,0.3)', color: '#56D1E3', cursor: "pointer" }}
+        >
             {copied ? (
               <>
-                <Check className="h-3.5 w-3.5 text-green-500" />
+                <Check className="h-3.5 w-3.5" style={{ color: '#1DE0E7' }} />
                 Copied!
               </>
             ) : (
               <>
-                <Link2 className="h-3.5 w-3.5" />
+                <Link2 className="h-3.5 w-3.5" style={{cursor: "pointer"}}/>
                 Copy link
               </>
             )}
@@ -220,7 +231,7 @@ function PersonRow({
           <p className="text-sm truncate">{person.email}</p>
         )}
       </div>
-      <span className="text-xs text-muted-foreground shrink-0">{role}</span>
+      <span className="text-xs shrink-0" >{role}</span>
       {onRemove && (
         <Button
           variant="ghost"
@@ -262,8 +273,8 @@ function Avatar({
   }
 
   return (
-    <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-      <span className="text-xs font-medium text-muted-foreground">{initials}</span>
+    <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(29,224,231,0.12)' }}>
+      <span className="text-xs font-medium" style={{ color: '#1DE0E7' }}>{initials}</span>
     </div>
   )
 }

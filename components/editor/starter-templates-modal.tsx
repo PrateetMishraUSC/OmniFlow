@@ -166,7 +166,7 @@ export function StarterTemplatesModal({ open, onOpenChange, onImport }: StarterT
             {CANVAS_TEMPLATES.map((template) => (
               <div
                 key={template.id}
-                className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-border/80 hover:bg-accent/30"
+                className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-[rgba(29,224,231,0.3)] hover:bg-accent/30"
               >
                 <div className="overflow-hidden rounded-md">
                   <TemplatePreview nodes={template.nodes} edges={template.edges} />
@@ -179,9 +179,13 @@ export function StarterTemplatesModal({ open, onOpenChange, onImport }: StarterT
                   </div>
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="shrink-0 text-xs"
+                    className="shrink-0 text-xs border-0"
                     onClick={() => handleImport(template)}
+                    style={{
+                      background: 'linear-gradient(135deg, #4394BF 0%, #56D1E3 55%, #1DE0E7 100%)',
+                      color: '#ffffff',
+                      cursor: "pointer"
+                    }}
                   >
                     Import
                   </Button>

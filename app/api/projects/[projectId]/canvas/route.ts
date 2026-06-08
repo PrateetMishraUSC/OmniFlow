@@ -52,19 +52,40 @@ export async function PUT(
     return Response.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = await request.json();
-  const canvasJson = JSON.stringify(body);
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
-  const blob = await put(`canvas/${projectId}.json`, canvasJson, {
-    access: "private",
-    contentType: "application/json",
-    allowOverwrite: true,
-  });
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    !Array.isArray((body as Record<string, unknown>).nodes) ||
+    !Array.isArray((body as Record<string, unknown>).edges)
+  ) {
+    return Response.json(
+      { error: "Body must contain nodes and edges arrays" },
+      { status: 400 }
+    );
+  }
 
-  await prisma.project.update({
-    where: { id: projectId },
-    data: { canvasJsonPath: blob.url },
-  });
+  try {
+    const blob = await put(`canvas/${projectId}.json`, JSON.stringify(body), {
+      access: "private",
+      contentType: "application/json",
+      allowOverwrite: true,
+    });
 
-  return Response.json({ url: blob.url });
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { canvasJsonPath: blob.url },
+    });
+
+    return Response.json({ url: blob.url });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Upload failed";
+    return Response.json({ error: message }, { status: 500 });
+  }
 }
