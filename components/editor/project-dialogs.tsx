@@ -110,14 +110,22 @@ function CreateProjectDialog({
           />
           <p className="text-xs text-muted-foreground">
             Room ID:{" "}
-            <span className="font-mono text-foreground">
+            <span className="font-mono" style={{ color: '#56D1E3' }}>
               {slugPreview || <span className="text-muted-foreground italic">derived from name</span>}
             </span>
           </p>
         </div>
 
         <DialogFooter showCloseButton>
-          <Button disabled={!nameInput.trim() || loading} onClick={onCreate}>
+          <Button
+            disabled={!nameInput.trim() || loading}
+            onClick={onCreate}
+            className="border-0"
+            style={{
+              background: 'linear-gradient(135deg, #4394BF 0%, #56D1E3 55%, #1DE0E7 100%)',
+              color: '#ffffff',
+            }}
+          >
             {loading ? "Creating…" : "Create Project"}
           </Button>
         </DialogFooter>
@@ -175,7 +183,15 @@ function RenameProjectDialog({
         />
 
         <DialogFooter showCloseButton>
-          <Button disabled={!nameInput.trim() || loading} onClick={onRename}>
+          <Button
+            disabled={!nameInput.trim() || loading}
+            onClick={onRename}
+            className="border-0"
+            style={{
+              background: 'linear-gradient(135deg, #4394BF 0%, #56D1E3 55%, #1DE0E7 100%)',
+              color: '#ffffff',
+            }}
+          >
             {loading ? "Renaming…" : "Rename"}
           </Button>
         </DialogFooter>

@@ -279,7 +279,7 @@ function WorkspaceContent({
         />
       </main>
 
-      <AISidebar isOpen={aiOpen} onClose={() => setAiOpen(false)} />
+      <AISidebar isOpen={aiOpen} onClose={() => setAiOpen(false)} roomId={roomId} projectId={projectId} />
 
       <StarterTemplatesModal
         open={templatesOpen}

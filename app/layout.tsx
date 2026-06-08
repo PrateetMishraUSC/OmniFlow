@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OmniFlow",
+  title: "Syntropy",
   description: "AI-native workflow platform",
 };
 
@@ -29,7 +29,7 @@ export default function RootLayout({
       appearance={{
         theme: dark,
         variables: {
-          colorBackground: "var(--bg-subtle)",
+          colorBackground: "var(--bg-elevated)",
           colorPrimary: "var(--accent-primary)",
           colorPrimaryForeground: "var(--bg-base)",
           colorForeground: "var(--text-primary)",

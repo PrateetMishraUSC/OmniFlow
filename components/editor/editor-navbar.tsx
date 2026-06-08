@@ -31,7 +31,7 @@ export function EditorNavbar({ isOpen, onToggle, title, actions, className }: Ed
       {title && (
         <div className="ml-2 flex flex-col justify-center leading-none truncate max-w-xs">
           <span className="text-sm font-medium text-foreground truncate">{title}</span>
-          <span className="text-[10px] text-muted-foreground">workspace</span>
+          <span className="text-[10px]" style={{ color: '#56D1E3' }}>workspace</span>
         </div>
       )}
 
@@ -40,7 +40,11 @@ export function EditorNavbar({ isOpen, onToggle, title, actions, className }: Ed
       {actions && <div className="flex items-center gap-1 px-2">{actions}</div>}
 
       <div className="flex items-center px-3">
-        <UserButton />
+        <UserButton
+          appearance={{
+            variables: { colorPrimary: '#2A729E' },
+          }}
+        />
       </div>
     </header>
   )
