@@ -1,4 +1,4 @@
-import { task, metadata } from "@trigger.dev/sdk/v3";
+import { task, metadata } from "@trigger.dev/sdk";
 import { generateText, tool } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
@@ -139,8 +139,9 @@ function setStatus(status: string, message: string) {
 
 export const designAgent = task({
   id: "design-agent",
-  run: async (payload: { prompt: string; roomId: string; userId?: string }) => {
+  run: async (payload: { prompt: string; roomId: string; userId?: string }, { ctx }) => {
     const { prompt, roomId } = payload;
+    const runId = ctx.run.id;
     const liveblocks = getLiveblocksClient();
 
     setStatus("thinking", "Analyzing your request…");
@@ -154,6 +155,7 @@ export const designAgent = task({
 
     await liveblocks.broadcastEvent(roomId, {
       type: "ai-status",
+      runId,
       status: "thinking",
       message: "Analyzing your request…",
     }).catch(() => {});
@@ -184,6 +186,7 @@ export const designAgent = task({
       setStatus("processing", "Designing your architecture…");
       await liveblocks.broadcastEvent(roomId, {
         type: "ai-status",
+        runId,
         status: "processing",
         message: "Designing your architecture…",
       }).catch(() => {});
@@ -212,6 +215,7 @@ export const designAgent = task({
       setStatus("applying", applyingMsg);
       await liveblocks.broadcastEvent(roomId, {
         type: "ai-status",
+        runId,
         status: "applying",
         message: applyingMsg,
       }).catch(() => {});
@@ -360,6 +364,7 @@ export const designAgent = task({
 
       await liveblocks.broadcastEvent(roomId, {
         type: "ai-status",
+        runId,
         status: "done",
         message: summary,
       }).catch(() => {});
@@ -377,6 +382,7 @@ export const designAgent = task({
 
       await liveblocks.broadcastEvent(roomId, {
         type: "ai-status",
+        runId,
         status: "error",
         message: "Something went wrong. Please try again.",
       }).catch(() => {});

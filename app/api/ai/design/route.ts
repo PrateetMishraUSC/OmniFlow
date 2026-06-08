@@ -1,11 +1,11 @@
-import { auth } from "@clerk/nextjs/server";
-import { tasks, auth as triggerAuth } from "@trigger.dev/sdk/v3";
+import { tasks, auth as triggerAuth } from "@trigger.dev/sdk";
+import { getCurrentUserIdentity, getAccessibleProject } from "@/lib/project-access";
 import prisma from "@/lib/prisma";
 import type { designAgent } from "@/trigger/design-agent";
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
-  if (!userId) {
+  const identity = await getCurrentUserIdentity();
+  if (!identity) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -18,7 +18,16 @@ export async function POST(request: Request) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const handle = await tasks.trigger<typeof designAgent>("design-agent", { prompt, roomId, userId });
+  const access = await getAccessibleProject(projectId, identity);
+  if (!access) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const handle = await tasks.trigger<typeof designAgent>(
+    "design-agent",
+    { prompt, roomId, userId: identity.userId },
+    { debounce: { key: `design-agent-${roomId}`, delay: "5s" } },
+  );
 
   // Both are non-fatal — task is already running regardless
   const [publicToken] = await Promise.allSettled([
@@ -26,7 +35,7 @@ export async function POST(request: Request) {
       scopes: { read: { runs: [handle.id] } },
       expirationTime: "1h",
     }),
-    prisma.taskRun.create({ data: { runId: handle.id, projectId, userId } }),
+    prisma.taskRun.create({ data: { runId: handle.id, projectId, userId: identity.userId } }),
   ]).then((results) => results.map((r) => (r.status === "fulfilled" ? r.value : null)));
 
   return Response.json({ runId: handle.id, publicToken }, { status: 201 });

@@ -424,6 +424,7 @@ export function AISidebar({ isOpen, onClose, roomId, projectId }: AISidebarProps
   // Refs used inside useEventListener to avoid stale closures
   const isOwnerRef = useRef(false)
   const activeFeedMsgIdRef = useRef<string | null>(null)
+  const activeRunIdRef = useRef<string | null>(null)
 
   const self = useSelf()
   const createFeed = useCreateFeed()
@@ -485,7 +486,10 @@ export function AISidebar({ isOpen, onClose, roomId, projectId }: AISidebarProps
   // Listen for AI status events broadcast from the Trigger.dev task
   useEventListener(({ event }) => {
     if (event.type !== "ai-status") return
-    const { status, message } = event
+    const { status, message, runId } = event as { status: string; message: string; runId?: string }
+
+    // Ignore events from a different run than the one this client triggered
+    if (runId && activeRunIdRef.current && runId !== activeRunIdRef.current) return
 
     // Update local AI response placeholder
     setAiMessages((prev) => {
@@ -545,6 +549,7 @@ export function AISidebar({ isOpen, onClose, roomId, projectId }: AISidebarProps
     if (status === "done" || status === "error") {
       pendingMsgIdRef.current = null
       activeFeedMsgIdRef.current = null
+      activeRunIdRef.current = null
       isOwnerRef.current = false
     }
   })
@@ -657,6 +662,7 @@ export function AISidebar({ isOpen, onClose, roomId, projectId }: AISidebarProps
 
         setActiveRunId(runId)
         setActiveToken(publicToken)
+        activeRunIdRef.current = runId
       } catch {
         setAiMessages((prev) =>
           prev.map((m) =>
