@@ -1,5 +1,5 @@
-import { task, metadata, retry } from "@trigger.dev/sdk";
-import { generateText, tool, stepCountIs } from "ai";
+import { task, metadata } from "@trigger.dev/sdk";
+import { generateText, tool } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { LiveObject, LiveMap } from "@liveblocks/core";
@@ -39,8 +39,7 @@ STEP 2 — Call addEdge once for EVERY edge in your plan. Work straight down the
 STEP 3 — Call finishDesign. ONLY after the last edge is placed. Calling it before
   all planned edges exist is an error.
 
-After each tool call you will receive a confirmation. Use it to track progress and
-keep going until every node and every edge from your plan has been created.
+You must emit all tool calls in a single response — nodes first, then edges, then finishDesign.
 
 ## Node shapes
 - rectangle: services, servers, application layers (generic)
@@ -99,8 +98,6 @@ addEdge({ id: "edge-api-db", source: "api-servers", target: "nosql-db", arrowTyp
 addEdge({ id: "edge-api-analytics", source: "api-servers", target: "analytics-service", arrowType: "source-to-target", label: "log click" })
 finishDesign({ summary: "URL shortener with load balancer, API servers, Redis cache, NoSQL store, and analytics." })`;
 
-// Tools include execute() so the AI SDK feeds tool results back to the model,
-// enabling the multi-step loop to continue past the first batch of calls.
 const canvasTools = {
   addNode: tool({
     description: "Add a new node to the canvas",
@@ -114,7 +111,6 @@ const canvasTools = {
       width: z.number().optional().describe("Width in pixels, default 160"),
       height: z.number().optional().describe("Height in pixels, default 60"),
     }),
-    execute: async ({ id }) => `Node "${id}" added. Continue with remaining nodes, then edges.`,
   }),
   moveNode: tool({
     description: "Move an existing node to a new position",
@@ -123,7 +119,6 @@ const canvasTools = {
       x: z.number(),
       y: z.number(),
     }),
-    execute: async ({ id }) => `Node "${id}" moved.`,
   }),
   resizeNode: tool({
     description: "Resize an existing node",
@@ -132,7 +127,6 @@ const canvasTools = {
       width: z.number(),
       height: z.number(),
     }),
-    execute: async ({ id }) => `Node "${id}" resized.`,
   }),
   updateNodeData: tool({
     description: "Update the label, color, or shape of an existing node",
@@ -142,12 +136,10 @@ const canvasTools = {
       colorBg: z.string().optional(),
       shape: z.enum(CANVAS_SHAPES).optional(),
     }),
-    execute: async ({ id }) => `Node "${id}" updated.`,
   }),
   deleteNode: tool({
     description: "Delete a node from the canvas",
     inputSchema: z.object({ id: z.string() }),
-    execute: async ({ id }) => `Node "${id}" deleted.`,
   }),
   addEdge: tool({
     description: "Add a directed edge between two nodes",
@@ -158,26 +150,17 @@ const canvasTools = {
       label: z.string().optional().describe("Short protocol or action label"),
       arrowType: z.enum(ARROW_TYPES).optional(),
     }),
-    execute: async ({ id, source, target }) =>
-      `Edge "${id}" added (${source} -> ${target}). Add remaining edges, then call finishDesign.`,
   }),
   deleteEdge: tool({
     description: "Delete an edge from the canvas",
     inputSchema: z.object({ id: z.string() }),
-    execute: async ({ id }) => `Edge "${id}" deleted.`,
   }),
   finishDesign: tool({
     description: "Call this last to signal the design is complete",
     inputSchema: z.object({
       summary: z.string().describe("One sentence describing what was designed"),
     }),
-    execute: async ({ summary }) => `FINISHED: ${summary}`,
   }),
-};
-
-// Narrowed toolset for the repair pass — only edges, so the model cannot add nodes.
-const edgeRepairTools = {
-  addEdge: canvasTools.addEdge,
 };
 
 function setStatus(status: string, message: string) {
@@ -188,7 +171,7 @@ function setStatus(status: string, message: string) {
 export const designAgent = task({
   id: "design-agent",
   retry: {
-    maxAttempts: 5,
+    maxAttempts: 3,
     minTimeoutInMs: 10_000,
     maxTimeoutInMs: 60_000,
     factor: 2,
@@ -251,73 +234,21 @@ export const designAgent = task({
           ? `Existing canvas has ${existingNodes.length} nodes: ${JSON.stringify(existingNodes)} and ${existingEdges.length} edges: ${JSON.stringify(existingEdges)}. Extend this design without duplicating existing IDs.`
           : "The canvas is currently empty. Generate a complete initial architecture.";
 
-      // Multi-step execution: stopWhen lets the SDK loop the model across many steps
-      // (place nodes, then edges, then finish) instead of stopping after one pass.
-      // retry.onThrow catches transient Gemini overload errors before failing the task.
-      const result = await retry.onThrow(
-        () => generateText({
-          model: google("gemini-2.5-flash"),
-          tools: canvasTools,
-          system: SYSTEM_PROMPT,
-          prompt: `${contextLine}\n\nUser request: ${prompt}`,
-          maxOutputTokens: 16000,
-          temperature: 0.2,
-          stopWhen: stepCountIs(24),
-        }),
-        { maxAttempts: 3, minTimeoutInMs: 8_000, factor: 2 },
-      );
+      const result = await generateText({
+        model: google("gemini-2.5-flash"),
+        tools: canvasTools,
+        system: SYSTEM_PROMPT,
+        prompt: `${contextLine}\n\nUser request: ${prompt}`,
+      });
 
-      // Collect tool calls across ALL steps, not just the first.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      type AnyToolCall = { toolName: string; input: any };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let toolCalls: AnyToolCall[] = result.steps.flatMap((s) => s.toolCalls as AnyToolCall[]);
-
-      // Validation + repair pass: if the model under-connected, run a focused second
-      // call that only adds missing edges given the node list.
-      const nodeCalls = toolCalls.filter((tc) => tc.toolName === "addNode");
-      let edgeCalls = toolCalls.filter((tc) => tc.toolName === "addEdge");
-
-      if (nodeCalls.length > 1 && edgeCalls.length < nodeCalls.length - 1) {
-        const usedEdgeIds = new Set(edgeCalls.map((e) => e.input.id as string));
-        const nodeList = nodeCalls
-          .map((n) => `${n.input.id as string} (${n.input.label as string})`)
-          .join(", ");
-        const existingEdgeList =
-          edgeCalls.map((e) => `${e.input.source as string} -> ${e.input.target as string}`).join("; ") || "none";
-
-        const repair = await retry.onThrow(
-          () => generateText({
-            model: google("gemini-2.5-flash"),
-            tools: edgeRepairTools,
-            system:
-              "You connect architecture nodes with directed edges. Call addEdge for every " +
-              "pair of nodes that communicate so that NO node is isolated. Do not add nodes. " +
-              "Use unique kebab-case edge IDs. Add short protocol/action labels.",
-            prompt:
-              `Nodes: ${nodeList}\n` +
-              `Edges already present: ${existingEdgeList}\n\n` +
-              `Add all missing edges so every node has at least one connection.`,
-            maxOutputTokens: 8000,
-            temperature: 0.2,
-            stopWhen: stepCountIs(12),
-          }),
-          { maxAttempts: 3, minTimeoutInMs: 8_000, factor: 2 },
-        );
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const repairEdges: AnyToolCall[] = (repair.steps.flatMap((s) => s.toolCalls) as AnyToolCall[])
-          .filter((tc) => tc.toolName === "addEdge" && !usedEdgeIds.has(tc.input.id as string));
-
-        edgeCalls = [...edgeCalls, ...repairEdges];
-        toolCalls = [...toolCalls, ...repairEdges];
-      }
+      const toolCalls = result.toolCalls as Array<{ toolName: string; input: any }>;
 
       const finishCall = toolCalls.find((tc) => tc.toolName === "finishDesign");
-      const summary = finishCall ? (finishCall.input.summary as string) : "Design complete.";
+      const summary = finishCall ? ((finishCall.input as { summary: string }).summary) : "Design complete.";
 
-      const addedNodes = nodeCalls.length;
-      const addedEdges = edgeCalls.length;
+      const addedNodes = toolCalls.filter((tc) => tc.toolName === "addNode").length;
+      const addedEdges = toolCalls.filter((tc) => tc.toolName === "addEdge").length;
       const applyingMsg = `Placing ${addedNodes} nodes and ${addedEdges} connections…`;
 
       setStatus("applying", applyingMsg);
@@ -333,7 +264,6 @@ export const designAgent = task({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let flow = root.get("flow") as any;
 
-          // Initialize storage structure if first run (no client has connected yet)
           if (!flow) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             flow = new LiveObject({ nodes: new LiveMap<string, LiveObject<any>>(), edges: new LiveMap<string, LiveObject<any>>() });
