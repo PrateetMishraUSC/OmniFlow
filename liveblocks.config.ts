@@ -23,6 +23,7 @@ declare global {
 
     RoomEvent: {
       type: "ai-status";
+      runId: string;
       status: "thinking" | "processing" | "applying" | "done" | "error";
       message: string;
     };

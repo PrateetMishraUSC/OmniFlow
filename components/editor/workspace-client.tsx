@@ -13,6 +13,7 @@ import { ShareDialog } from "@/components/editor/share-dialog"
 import { CanvasRoom } from "@/components/editor/canvas-room"
 import { StarterTemplatesModal } from "@/components/editor/starter-templates-modal"
 import { AISidebar } from "@/components/editor/ai-sidebar"
+import { ShortcutsPopover } from "@/components/editor/shortcuts-popover"
 import { Button } from "@/components/ui/button"
 import { useProjectActions } from "@/hooks/use-project-actions"
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
@@ -230,20 +231,22 @@ function WorkspaceContent({
     <>
       <PresenceBar />
       <SaveIndicator status={saveStatus} />
-      <Button variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={() => setTemplatesOpen(true)}>
+      <Button variant="ghost" size="sm" className="gap-1.5 text-xs" style={{cursor: "pointer"}} onClick={() => setTemplatesOpen(true)}>
         <LayoutTemplate className="h-3.5 w-3.5" />
         Templates
       </Button>
-      <Button variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={() => setShareOpen(true)}>
+      <Button variant="ghost" size="sm" className="gap-1.5 text-xs" style={{cursor: "pointer"}} onClick={() => setShareOpen(true)}>
         <Share2 className="h-3.5 w-3.5" />
         Share
       </Button>
+      <ShortcutsPopover />
       <Button
         variant="ghost"
         size="icon"
         onClick={() => setAiOpen((v) => !v)}
         aria-label="Toggle AI sidebar"
         aria-expanded={aiOpen}
+        style={{ cursor: "pointer" }}
       >
         <Bot className="h-4 w-4" />
       </Button>

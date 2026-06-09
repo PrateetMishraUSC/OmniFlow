@@ -5,18 +5,18 @@ import Image from "next/image";
 const features = [
   {
     icon: Zap,
-    title: "AI Workflow Generation",
-    description: "Describe your process, AI maps it to nodes on a live canvas.",
+    title: "AI Architecture Design",
+    description: "Describe what you're building. The AI places nodes, draws connections, and labels every service instantly on a shared canvas.",
   },
   {
     icon: Users,
-    title: "Real-time Collaboration",
-    description: "Live presence and shared editing across your team.",
+    title: "Live Multiuser Canvas",
+    description: "See your teammates' cursors, selections, and edits as they happen. Everyone works on the same diagram, no refresh needed.",
   },
   {
     icon: GitBranch,
-    title: "Instant Automation",
-    description: "Connect your tools and ship automations in minutes.",
+    title: "Auto-generated Specs",
+    description: "Turn any canvas into a structured technical spec with one click and ready to share with engineers, stakeholders, or your next AI prompt.",
   },
 ];
 
@@ -34,7 +34,7 @@ export default function SignUpPage() {
 
         <div className="max-w-md">
           <h1 className="text-4xl font-bold leading-[1.15] tracking-tight">
-            <span style={{ color: '#ffffff' }}>Build workflows<br />at the </span>
+            <span style={{ color: '#ffffff' }}>Design systems at the</span>
             <span style={{
               background: 'linear-gradient(135deg, #37789b 0%, #56D1E3 55%, #1DE0E7 100%)',
               WebkitBackgroundClip: 'text',
@@ -43,8 +43,9 @@ export default function SignUpPage() {
             }}>speed<br />of thought.</span>
           </h1>
           <p className="mt-5 text-[0.9375rem] leading-relaxed text-copy-muted">
-            Describe your process in plain English. Syntropy maps it to an
-            automated workflow your whole team can run in real time.
+            Describe any system in plain English. Syntropy's AI maps it to a
+            live architecture canvas your whole team can explore, edit, and 
+            build on together — in real time.
           </p>
           <ul className="mt-10 space-y-5">
             {features.map(({ icon: Icon, title, description }) => (

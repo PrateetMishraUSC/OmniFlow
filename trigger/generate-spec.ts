@@ -82,7 +82,7 @@ For each node on the canvas, a subsection:
 - **Interfaces**: Inbound and outbound connections.
 
 ## Data Flow
-Step-by-step description of key request/data flows through the system.
+Step-by-step description of key request/data flows through the system and a new line for every point.
 
 ## Integration Points
 List all external integrations, APIs, and protocols inferred from edge labels.
