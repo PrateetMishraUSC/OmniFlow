@@ -23,11 +23,17 @@ export async function POST(request: Request) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const handle = await tasks.trigger<typeof designAgent>(
-    "design-agent",
-    { prompt, roomId, userId: identity.userId },
-    { debounce: { key: `design-agent-${roomId}`, delay: "5s" } },
-  );
+  let handle: Awaited<ReturnType<typeof tasks.trigger>>;
+  try {
+    handle = await tasks.trigger<typeof designAgent>("design-agent", {
+      prompt,
+      roomId,
+      userId: identity.userId,
+    });
+  } catch (err) {
+    console.error("[/api/ai/design] tasks.trigger failed:", err);
+    return Response.json({ error: "Failed to trigger AI task" }, { status: 500 });
+  }
 
   // Both are non-fatal — task is already running regardless
   const [publicToken] = await Promise.allSettled([

@@ -23,7 +23,7 @@ export function EditorNavbar({ isOpen, onToggle, title, actions, className }: Ed
       )}
     >
       <div className="flex items-center px-2">
-        <Button variant="ghost" size="icon" onClick={onToggle} aria-label="Toggle sidebar">
+        <Button variant="ghost" size="icon" onClick={onToggle} aria-label="Toggle sidebar" style={{cursor: "pointer"}}>
           {isOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
         </Button>
       </div>

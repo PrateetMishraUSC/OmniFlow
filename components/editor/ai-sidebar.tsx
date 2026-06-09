@@ -38,9 +38,9 @@ interface DisplayMessage {
 }
 
 const STARTER_CHIPS = [
-  "Design an e-commerce backend",
-  "Create a chat app architecture",
-  "Build a CI/CD pipeline",
+  "Design a high scale e-commerce website system with an API gateway, CDNs, Redis Cache, Read and Write Services, and a NoSQL DB.",
+  "Design a real-time messaging platform with WebSocket servers, message queues, Kafka, and a distributed database.",
+  "Build a microservices architecture for a video streaming platform with transcoding workers, CDN, and object storage.",
 ]
 
 interface ProjectSpec {
@@ -218,6 +218,7 @@ function SpecsTab({ projectId, roomId, isActive, chatHistory }: SpecsTabProps) {
           style={{
             background: 'linear-gradient(135deg, #4394BF 0%, #56D1E3 55%, #1DE0E7 100%)',
             color: '#ffffff',
+            cursor: "pointer",
           }}
           disabled={generating}
         >
@@ -551,6 +552,10 @@ export function AISidebar({ isOpen, onClose, roomId, projectId }: AISidebarProps
       activeFeedMsgIdRef.current = null
       activeRunIdRef.current = null
       isOwnerRef.current = false
+      // Clean up React state even when RunSubscriber never mounted (null publicToken)
+      setActiveRunId(null)
+      setActiveToken(null)
+      setIsSubmitting(false)
     }
   })
 
@@ -584,21 +589,33 @@ export function AISidebar({ isOpen, onClose, roomId, projectId }: AISidebarProps
         })
         pendingMsgIdRef.current = null
       } else if (status === "FAILED") {
-        setAiMessages((prev) => {
-          if (!pendingMsgIdRef.current) return prev
-          return prev.map((m) =>
+        // Update the local AI message bubble
+        setAiMessages((prev) =>
+          prev.map((m) =>
             m.id === pendingMsgIdRef.current
               ? { ...m, content: "Something went wrong. Please try again.", isLoading: false }
               : m,
-          )
-        })
+          ),
+        )
         pendingMsgIdRef.current = null
+        // Push the error status to the shared feed so isGenerating clears for all
+        // room participants, not just the triggering user.
+        const feedMsgId = activeFeedMsgIdRef.current
+        if (feedMsgId) {
+          updateFeedMessage(FEED_ID, feedMsgId, {
+            text: "Something went wrong. Please try again.",
+            status: "error",
+          }).catch(() => {})
+          activeFeedMsgIdRef.current = null
+        }
+        isOwnerRef.current = false
+        activeRunIdRef.current = null
       }
       setActiveRunId(null)
       setActiveToken(null)
       setIsSubmitting(false)
     },
-    [],
+    [updateFeedMessage],
   )
 
   const sendMessage = useCallback(
@@ -728,8 +745,8 @@ export function AISidebar({ isOpen, onClose, roomId, projectId }: AISidebarProps
       )}
 
       {/* Header */}
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-surface-border shrink-0">
-        <Bot className="h-4 w-4 text-[#1DE0E7] shrink-0" />
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-surface-border shrink-0" >
+        <Bot className="h-4 w-4 text-[#1DE0E7] shrink-0"/>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-copy-primary leading-none">AI Workspace</p>
           {isGenerating && sharedStatusText ? (
@@ -738,15 +755,16 @@ export function AISidebar({ isOpen, onClose, roomId, projectId }: AISidebarProps
               <span className="text-[10px] text-[#1DE0E7] truncate">{sharedStatusText}</span>
             </span>
           ) : (
-            <p className="text-[11px] text-copy-muted mt-0.5">Collaborate with OmniFlow</p>
+            <p className="text-[11px] text-copy-muted mt-0.5">Collaborate with Syntropy</p>
           )}
         </div>
         <button
           onClick={onClose}
           className="p-1 rounded text-copy-muted hover:text-copy-primary transition-colors"
           aria-label="Close AI sidebar"
+          style={{cursor: "pointer"}}
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" style={{cursor: "pointer"}}/>
         </button>
       </div>
 

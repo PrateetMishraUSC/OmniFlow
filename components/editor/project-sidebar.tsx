@@ -39,7 +39,6 @@ function SidebarContent({
       <div className="flex items-center justify-between px-4 py-3 border-b border-surface-border shrink-0">
         <span className="text-sm font-semibold text-copy-primary">Project</span>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-copy-muted"><i><b>⌥ or ⎇ + A</b></i></span>
           <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close sidebar">
             <X />
           </Button>
