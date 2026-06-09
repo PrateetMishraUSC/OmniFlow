@@ -22,7 +22,7 @@
 
 **Design system architectures collaboratively in real time, powered by an AI Architect that generates and modifies diagrams on your canvas.**
 
-[Live Demo](syntropy-59hj.vercel.app) &middot; [Report Bug](https://github.com/PrateetMishraUSC/Syntropy/issues) &middot; [Request Feature](https://github.com/PrateetMishraUSC/Syntropy/issues)
+[Live Demo](https://syntropy-59hj.vercel.app/sign-in?redirect_url=https%3A%2F%2Fsyntropy-59hj.vercel.app%2F) &middot; [Report Bug](https://github.com/PrateetMishraUSC/Syntropy/issues) &middot; [Request Feature](https://github.com/PrateetMishraUSC/Syntropy/issues)
 
 </div>
 
