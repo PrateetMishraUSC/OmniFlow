@@ -16,7 +16,7 @@ const features = [
   {
     icon: GitBranch,
     title: "Auto-generated Specs",
-    description: "Turn any canvas into a structured technical spec with one click and ready to share with engineers, stakeholders, or your next AI prompt.",
+    description: "Turn any canvas into a structured technical spec with one click and is ready to share with engineers, stakeholders, or your next AI prompt.",
   },
 ];
 
